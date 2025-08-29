@@ -33,21 +33,12 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.9"
-  AWS_REGION: ap-northeast-1
-  S3_BUCKET: hotcake-devops-site
-  S3_REPORT_PATH: e2e-tests-allure-report
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_DEV_GITHUB_ACTION_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4
@@ -58,16 +49,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install awscli
-
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline --save-dev
-
-      - name: Create Test Directories
-        run: |
-          mkdir -p allure-results
-          mkdir -p allure-report
-
 
       - name: Set Taipei Timestamp
         run: |
@@ -99,7 +80,7 @@ jobs:
           BROWSERSTACK_HUB_URL: https://hub-cloud.browserstack.com/wd/hub
           
           # BrowserStack project settings
-          BROWSERSTACK_PROJECT_NAME: "Hotcake App - E2E Tests"
+          BROWSERSTACK_PROJECT_NAME: "GoGoX App - E2E Tests"
           BROWSERSTACK_BUILD_NAME: "${{ env.TAIPEI_DATE }}-GA-${{ github.event.inputs.platform || 'android' }}-${{ github.event.inputs.environment || 'sit' }}"
           BROWSERSTACK_SESSION_NAME: "Manual-${{ env.TAIPEI_TIME }}-${{ github.event.inputs.test_file != '' && github.event.inputs.test_file || github.event.inputs.tags != '' && github.event.inputs.tags || 'All-Tests' }}"
           
@@ -116,10 +97,9 @@ jobs:
           BROWSERSTACK_IOS_APP_ID_PRODUCTION: ${{ secrets.BROWSERSTACK_IOS_APP_ID_PRODUCTION }}
           
           # Application ID settings
-          APP_ID_STAGING: "com.hunger.hotcakeapp.staging"
-          APP_ID_SIT: "com.hunger.hotcakeapp.sit"
-          APP_ID_PRODUCTION: "com.hunger.hotcakeapp"
-          
+          APP_ID_STAGING: "com.gogox.app.staging"
+          APP_ID_SIT: "com.gogox.app.sit"
+          APP_ID_PRODUCTION: "com.gogox.app"
           
         run: |
           echo "Running ${{ github.event.inputs.platform || 'android' }} E2E tests..."
@@ -140,281 +120,186 @@ jobs:
             python -m pytest -v --platform ${{ github.event.inputs.platform || 'android' }} --runner browserstack --env ${{ github.event.inputs.environment || 'sit' }} --alluredir=allure-results
           fi
 
+      - name: Install Allure CLI
+        if: always()
+        run: npm install -g allure-commandline --save-dev
+
+      - name: Create reports directory
+        if: always()
+        run: |
+          mkdir -p reports/{allure/{results,reports},html,coverage,logs}
+          mkdir -p allure-results
+          mkdir -p allure-report
+          mkdir -p screenshots
+          echo "Reports directory structure created"
+
+      - name: Copy test results to reports directory
+        if: always()
+        run: |
+          cp -r allure-results/* reports/allure/results/ || true
+          echo "Test results copied to reports directory"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.event.inputs.platform }}-${{ github.run_id }}
+          path: reports/allure/results
+          retention-days: 30
+
+      - name: Set report date env
+        if: always()
+        run: |
+          # Set timezone to Asia/Taipei
+          export TZ='Asia/Taipei'
+          echo "REPORT_DATE=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
+
+      - name: Create reports directory structure
+        if: always()
+        run: |
+          mkdir -p reports/allure/reports/${{ github.event.inputs.platform }}
+          echo "Reports directory structure created"
+
+      - name: Clean old Allure reports (keep 60 days)
+        if: always()
+        run: |
+          REPORTS_DIR=reports/allure/reports/${{ github.event.inputs.platform }}
+          find $REPORTS_DIR -maxdepth 1 -type d -name '20*' -mtime +60 -exec rm -rf {} + 2>/dev/null || true
+
       - name: Generate Allure Report
         if: always()
-        run: allure generate --clean -o allure-report allure-results
-
-      - name: Sync Allure Report to S3 (history)
-        if: always()
-        run: |
-          TIMESTAMP=$(TZ='Asia/Taipei' date +'%Y%m%d-%H%M')
-          aws s3 sync allure-report s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/$TIMESTAMP --delete
-          echo "manual" > build_type.txt
-          aws s3 cp build_type.txt s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/$TIMESTAMP/build_type.txt
-          echo "History report sync completed"
-
-      - name: Sync Allure Report to S3 (latest)
-        if: always()
-        run: |
-          # Upload to temporary directory
-          aws s3 sync allure-report s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/temp-latest --delete
-
-          # Delete old latest
-          aws s3 rm s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/latest/ --recursive
-
-          # Rename temporary directory to latest
-          aws s3 sync s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/temp-latest s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/latest
-
-          # Add build_type.txt
-          echo "manual" > build_type.txt
-          aws s3 cp build_type.txt s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/latest/build_type.txt
-
-          # Clean temporary directory
-          aws s3 rm s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/temp-latest/ --recursive
-          
-          # Verify sync status
-          echo "🔍 驗證 latest 目錄同步狀況..."
-          if aws s3 ls s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/latest/index.html; then
-            echo "✅ Latest report sync completed successfully"
-            echo "📋 Latest 目錄內容："
-            aws s3 ls s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/latest/ --recursive
-          else
-            echo "❌ Latest report sync failed"
-            echo "📋 檢查 temp-latest 是否存在："
-            aws s3 ls s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/temp-latest/ --recursive || echo "temp-latest 目錄不存在"
-            exit 1
-          fi
+        uses: simple-elf/allure-report-action@master
+        with:
+          allure_results: reports/allure/results
+          allure_report: reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}
+          keep_reports: 20
 
       - name: Generate Allure Index Page
         if: always()
         run: |
-          sleep 10  
-          # Create index page directory
-          mkdir -p allure-index
-          INDEX_FILE=allure-index/index.html
-
-          # Get existing report list from S3
-          echo "Fetching existing reports from S3..."
-          EXISTING_REPORTS=$(aws s3 ls s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/ | grep 'PRE' | awk '{print $2}' | sed 's/\///g' | grep -E '^[0-9]{8}-[0-9]{4}$' | sort -r) || true
-
-          # Generate HTML index page
-          cat > $INDEX_FILE << 'EOF'
-          <!DOCTYPE html>
-          <html lang="zh-TW">
-          <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>Allure Reports Index - E2E Test Reports</title>
-              <style>
-                  body {
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                      max-width: 1200px;
-                      margin: 0 auto;
-                      padding: 20px;
-                      background-color: #f5f5f5;
-                  }
-                                     .header {
-                       background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-                       color: white;
-                       padding: 30px;
-                       border-radius: 10px;
-                       margin-bottom: 30px;
-                       text-align: center;
-                   }
-                  .header h1 {
-                      margin: 0;
-                      font-size: 2.5em;
-                  }
-                  .header p {
-                      margin: 10px 0 0 0;
-                      opacity: 0.9;
-                  }
-                  .reports-container {
-                      display: grid;
-                      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                      gap: 20px;
-                      margin-bottom: 30px;
-                  }
-                  .report-card {
-                      background: white;
-                      border-radius: 10px;
-                      padding: 20px;
-                      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                      transition: transform 0.2s, box-shadow 0.2s;
-                  }
-                  .report-card:hover {
-                      transform: translateY(-2px);
-                      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                  }
-                                     .report-card.latest {
-                       border: 2px solid #28a745;
-                       background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                       color: white;
-                   }
-                  .report-card.latest .report-title {
-                      color: white;
-                  }
-                  .report-title {
-                      font-size: 1.2em;
-                      font-weight: bold;
-                      margin-bottom: 10px;
-                      color: #333;
-                  }
-                  .report-date {
-                      color: #666;
-                      font-size: 0.9em;
-                      margin-bottom: 15px;
-                  }
-                  .report-card.latest .report-date {
-                      color: rgba(255,255,255,0.9);
-                  }
-                                     .report-link {
-                       display: inline-block;
-                       background: #007bff;
-                       color: white;
-                       text-decoration: none;
-                       padding: 10px 20px;
-                       border-radius: 5px;
-                       transition: background 0.2s;
-                   }
-                   .report-link:hover {
-                       background: #0056b3;
-                       text-decoration: none;
-                       color: white;
-                   }
-                  .report-card.latest .report-link {
-                      background: rgba(255,255,255,0.2);
-                      color: white;
-                  }
-                  .report-card.latest .report-link:hover {
-                      background: rgba(255,255,255,0.3);
-                  }
-                  .no-reports {
-                      text-align: center;
-                      color: #666;
-                      font-style: italic;
-                      grid-column: 1 / -1;
-                  }
-                  .report-type {
-                      color: #666;
-                      font-size: 0.95em;
-                      margin-bottom: 15px;
-                      font-weight: 500;
-                  }
-                  .report-card.latest .report-type {
-                      color: rgba(255,255,255,0.9);
-                  }
-              </style>
-          </head>
-          <body>
-                             <div class="header">
-                   <h1>🧪 E2E Test Reports</h1>
-               </div>
-              
-              <div class="reports-container">
-          EOF
-
-          # Add latest report card - pointing to the latest timestamp report
-          if [ -n "$EXISTING_REPORTS" ]; then
-            LATEST_REPORT=$(echo "$EXISTING_REPORTS" | head -1)
-            cat >> $INDEX_FILE << EOF
-                  <div class="report-card latest">
-                      <div class="report-title">🚀 Latest Report ($LATEST_REPORT)</div>
-                      <div class="report-type">Most recent test execution</div>
-                      <a href="./$LATEST_REPORT/index.html" class="report-link">View Latest Report</a>
-                  </div>
-          EOF
-          else
-            cat >> $INDEX_FILE << 'EOF'
-                  <div class="report-card latest">
-                      <div class="report-title">🚀 Latest Report</div>
-                      <div class="report-type">No recent test execution</div>
-                      <span class="report-link" style="background: #ccc; cursor: not-allowed;">No Reports Available</span>
-                  </div>
-          EOF
-          fi
-
-          # Add historical reports
-          if [ -n "$EXISTING_REPORTS" ]; then
-            echo "$EXISTING_REPORTS" | while read -r report_dir; do
-              if [ -n "$report_dir" ] && [ "$report_dir" != "latest" ]; then
-                # Read build type
-                BUILD_TYPE=$(aws s3 cp s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/$report_dir/build_type.txt - 2>/dev/null || echo "unknown")
-                echo "Report $report_dir build type: $BUILD_TYPE"
-
-                case $BUILD_TYPE in
-                  "scheduled") ICON="🤖"; TYPE_NAME="Scheduled Run" ;;
-                  "manual") ICON="👤"; TYPE_NAME="Manual Run" ;;
-                  "trigger") ICON="🔄"; TYPE_NAME="Trigger Run" ;;
-                  *) ICON="❓"; TYPE_NAME="Unknown Run ($BUILD_TYPE)" ;;
-                esac
-                
-                if [ "$BUILD_TYPE" = "unknown" ]; then
-                  hour=${report_dir:9:2}
-                  if [ "$hour" = "18" ] || [ "$hour" = "02" ]; then
-                    BUILD_TYPE="scheduled"
-                  else
-                    BUILD_TYPE="manual"
-                  fi
-                fi
-                
-                cat >> $INDEX_FILE << EOF
-                  <div class="report-card">
-                      <div class="report-title">📊 Report $report_dir</div>
-                      <div class="report-type">$ICON $TYPE_NAME</div>
-                      <a href="./$report_dir/index.html" class="report-link">View Report</a>
-                  </div>
-          EOF
-              fi
-            done
-          else
-            cat >> $INDEX_FILE << 'EOF'
-                  <div class="no-reports">
-                      No historical reports found
-                  </div>
-          EOF
-          fi
-
-          # Close HTML
-          cat >> $INDEX_FILE << 'EOF'
-              </div>
-              
-              <div style="text-align: center; margin-top: 30px; color: #666; font-size: 0.9em;">
-                  © 2025 Hotcake. All rights reserved.
-              </div>
-          </body>
-          </html>
-          EOF
-
-          echo "Generated index page at $INDEX_FILE"
-
-      - name: Upload Index Page to S3
-        if: always()
-        run: |
-          aws s3 cp allure-index/index.html s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/index.html
-          echo "Index page uploaded to S3"
-
-      - name: Clean old reports (keep 14 days)
-        if: always()
-        run: |
-          CUTOFF_DATE=$(TZ='Asia/Taipei' date -d '14 days ago' +'%Y%m%d')
-          echo "Cleaning reports older than $CUTOFF_DATE (keeping 14 days)"
-
-          aws s3 ls s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/ | \
-          grep 'PRE' | awk '{print $2}' | sed 's/\///g' | \
-          grep -E '^[0-9]{8}-[0-9]{4}$' | \
-          while read report_dir; do
-            report_date=${report_dir:0:8}
-            if [ "$report_date" -lt "$CUTOFF_DATE" ]; then
-              echo "🗑️ Deleting old report: $report_dir (created: $report_date)"
-              aws s3 rm s3://${{ env.S3_BUCKET }}/${{ env.S3_REPORT_PATH }}/$report_dir/ --recursive
-            else
-              echo "✅ Keeping recent report: $report_dir (created: $report_date)"
+          REPORTS_DIR=reports/allure/reports/${{ github.event.inputs.platform }}
+          sudo chmod -R 777 $REPORTS_DIR
+          INDEX_FILE=$REPORTS_DIR/index.html
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>${{ github.event.inputs.platform }} Allure Reports Index</title></head><body><h1>${{ github.event.inputs.platform }} Allure Reports</h1><ul>' > $INDEX_FILE
+          for d in $REPORTS_DIR/*/ ; do
+            dname=$(basename "$d")
+            if [ "$dname" != "latest" ]; then
+              echo "<li><a href=\"./$dname/\">$dname</a></li>" >> $INDEX_FILE
             fi
           done
+          echo '</ul></body></html>' >> $INDEX_FILE
 
-          echo "✨ Cleanup completed - reports older than $CUTOFF_DATE have been removed"
+      - name: Deploy to Netlify (date version)
+        if: always()
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy Allure report ${{ env.REPORT_DATE }} for ${{ github.event.inputs.platform }}"
+          enable-pull-request-comment: true
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Deploy Allure Index to Netlify Root
+        if: always()
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: reports/allure/reports/${{ github.event.inputs.platform }}
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy ${{ github.event.inputs.platform }} Allure index page"
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+          overwrites-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Debug allure-report content
+        if: always()
+        run: ls -l reports/allure/reports/${{ github.event.inputs.platform }}
 
       - name: Check Allure CLI version
         if: always()
         run: allure --version
+
+      - name: Test Results Summary
+        if: always()
+        run: |
+          echo "=== ${{ github.event.inputs.platform }} E2E Test Results Summary ==="
+          echo "Platform: ${{ github.event.inputs.platform }}"
+          echo "Device: ${{ github.event.inputs.device_name }}"
+          echo "OS Version: 17.5"
+          echo "Device Count: 1"
+          echo "Test Tags: ${{ github.event.inputs.tags || 'All Tests' }}"
+          echo "Build URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ -f "reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json" ]; then
+            echo ""
+            echo "=== Test Statistics ==="
+            cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.statistic | "Total: \(.total), Passed: \(.passed), Failed: \(.failed), Skipped: \(.skipped)"'
+            
+            duration=$(cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.time.duration')
+            duration_seconds=$((duration / 1000))
+            minutes=$((duration_seconds / 60))
+            seconds=$((duration_seconds % 60))
+            echo "Execution Time: ${minutes} minutes ${seconds} seconds"
+          else
+            echo "No test results found"
+          fi
+
+      - name: Test Insights
+        if: always()
+        run: |
+          echo "=== ${{ github.event.inputs.platform }} E2E Test Insights ==="
+
+          if [ -f "reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json" ]; then
+            # Get test statistics
+            total=$(cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.statistic.total')
+            passed=$(cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.statistic.passed')
+            failed=$(cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.statistic.failed')
+            skipped=$(cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.statistic.skipped')
+            
+            # Calculate success rate
+            if [ "$total" -gt 0 ]; then
+              success_rate=$((passed * 100 / total))
+              echo "Success Rate: ${success_rate}%"
+            fi
+            
+            # Test execution insights
+            echo ""
+            echo "=== Execution Insights ==="
+            if [ "$failed" -eq 0 ]; then
+              echo "✅ All tests passed successfully!"
+            elif [ "$failed" -gt 0 ]; then
+              echo "❌ $failed test(s) failed"
+              echo "⚠️  $skipped test(s) skipped"
+            fi
+            
+            if [ "$skipped" -gt 0 ]; then
+              echo "📋 $skipped test(s) were skipped - consider reviewing test conditions"
+            fi
+
+          else
+            echo "No test results available for insights"
+          fi
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo " TEST FAILURE - ${{ github.event.inputs.platform }}"
+          echo "Platform: ${{ github.event.inputs.platform }}"
+          echo "Device: ${{ github.event.inputs.device_name }}"
+          echo "Build: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Triggered by: ${{ github.actor }}"
+
+          if [ -f "reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json" ]; then
+            failed=$(cat reports/allure/reports/${{ github.event.inputs.platform }}/${{ env.REPORT_DATE }}/widgets/summary.json | jq -r '.statistic.failed')
+            echo "Failed tests: $failed"
+          fi
+
+          echo "Check Allure report for details"
