@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📱 Flutter Appium E2E Testing
+# 📱 GoGoX App Flutter Appium E2E Testing
 
 [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-blue)]()
 [![Appium](https://img.shields.io/badge/Appium-2.0-purple)]()
@@ -11,13 +11,31 @@
 
 **Language**: [English](README.MD) | [中文](README_zh.md)
 
-*Comprehensive end-to-end testing framework with BDD support, multi-platform testing, and cloud integration*
+*Comprehensive end-to-end testing framework for GoGoX logistics app with BDD support, multi-platform testing, and cloud integration*
 
 </div>
 
 ## 📖 Project Overview
 
-This is a comprehensive end-to-end testing framework for Flutter applications using **Appium**, **pytest-bdd** for behavior-driven development, supporting multiple platforms (Android, iOS) with both local and cloud testing capabilities.
+This is a comprehensive end-to-end testing framework for **GoGoX** - a leading logistics and delivery application, using **Appium**, **pytest-bdd** for behavior-driven development, supporting multiple platforms (Android, iOS) with both local and cloud testing capabilities.
+
+### 🚚 About GoGoX App
+
+GoGoX is a comprehensive logistics platform that connects users with delivery services, offering instant delivery solutions for various needs including:
+
+- **Instant Delivery**: Quick and reliable delivery services
+- **Multi-Service Selection**: Choose from various delivery options
+- **Best Price Guarantee**: Competitive pricing for all services
+- **Reliable Service**: Trusted delivery partners
+- **Easy Order Placement**: Simple and intuitive ordering process
+
+<div align="center">
+  <img src="./images/assets/place_order.png" alt="GoGoX Order Placement" width="200">
+  <img src="./images/assets/multi_selection.png" alt="GoGoX Service Selection" width="200">
+  <img src="./images/assets/best_price.png" alt="GoGoX Best Price" width="200">
+  <img src="./images/assets/reliable_service.png" alt="GoGoX Reliable Service" width="200">
+  <img src="./images/assets/payment.png" alt="GoGoX Payment" width="200">
+</div>
 
 ### 🌟 Key Features
 - **Multi-Platform Support**: Android, iOS  testing
@@ -29,24 +47,27 @@ This is a comprehensive end-to-end testing framework for Flutter applications us
 
 ### 🏗️ Architecture
 ```
-react-native-appium/
-├── features/           # BDD Gherkin scenarios
+flutter-appium-automation/
+├── features/           # BDD Gherkin scenarios for GoGoX app
 │   ├── android/           # Android app features 
 │   └── ios/         # iOS features 
-├── pages/             # Page Object Model
+├── pages/             # Page Object Model for GoGoX app
 │   ├── android/           # Android page objects
-│   ├── ios/         # ios page objects
+│   ├── ios/         # iOS page objects
 │   └── common/  # Common functionality
 ├── tests/             # Test step implementations 
 │   └── steps/         # BDD step definitions
 ├── utils/             # Helper utilities and configurations
+├── images/            # GoGoX app screenshots and assets
+│   └── assets/        # App feature screenshots
 └── screenshots/       # Test evidence storage
 ```
 
 # 📋 Table of Contents
 
-- [📱 Flutter Appium E2E Testing](#-flutter-appium-e2e-testing)
+- [📱 GoGoX App Flutter Appium E2E Testing](#-gogox-app-flutter-appium-e2e-testing)
   - [📖 Project Overview](#-project-overview)
+    - [🚚 About GoGoX App](#-about-gogox-app)
     - [🌟 Key Features](#-key-features)
     - [🏗️ Architecture](#️-architecture)
 - [📋 Table of Contents](#-table-of-contents)

@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 📱 Flutter Appium E2E 自動化測試
+# 📱 GoGoX App Flutter Appium E2E 自動化測試
 
 [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-blue)]()
 [![Appium](https://img.shields.io/badge/Appium-2.0-purple)]()
@@ -12,13 +12,31 @@
 
 **Language**: [English](README.MD) | [中文](README_zh.md)
 
-*具有 BDD 支持、多平台測試和雲端整合的端到端測試框架*
+*GoGoX 物流應用程式的綜合性端到端測試框架，具有 BDD 支持、多平台測試和雲端整合*
 
 </div>
 
 ## 📖 專案概述
 
-這是一個綜合性的 Flutter 應用程式端到端測試框架，使用 **Appium**、**pytest-bdd** 實現行為驅動開發，支援多平台（Android、iOS）本地和雲端測試功能。
+這是一個綜合性的 **GoGoX** 物流配送應用程式端到端測試框架，使用 **Appium**、**pytest-bdd** 實現行為驅動開發，支援多平台（Android、iOS）本地和雲端測試功能。
+
+### 🚚 關於 GoGoX App
+
+GoGoX 是一個綜合性物流平台，連接用戶與配送服務，為各種需求提供即時配送解決方案，包括：
+
+- **即時配送**: 快速可靠的配送服務
+- **多服務選擇**: 從各種配送選項中選擇
+- **最佳價格保證**: 所有服務的競爭性定價
+- **可靠服務**: 值得信賴的配送合作夥伴
+- **簡易下單**: 簡單直觀的訂單流程
+
+<div align="center">
+  <img src="./images/assets/place_order.png" alt="GoGoX 下單流程" width="200">
+  <img src="./images/assets/multi_selection.png" alt="GoGoX 服務選擇" width="200">
+  <img src="./images/assets/best_price.png" alt="GoGoX 最佳價格" width="200">
+  <img src="./images/assets/reliable_service.png" alt="GoGoX 可靠服務" width="200">
+  <img src="./images/assets/payment.png" alt="GoGoX 支付" width="200">
+</div>
 
 ### 🌟 主要特色
 - **多平台支援**: Android、iOS 測試
@@ -29,24 +47,27 @@
 
 ### 🏗️ 架構
 ```
-react-native-appium/
-├── features/           # BDD Gherkin 場景
+flutter-appium-automation/
+├── features/           # GoGoX app 的 BDD Gherkin 場景
 │   ├── android/           # Android 應用程式功能
 │   └── ios/         # iOS 功能
-├── pages/             # 頁面物件模式
+├── pages/             # GoGoX app 的頁面物件模式
 │   ├── android/           # Android 頁面物件
 │   ├── ios/         # iOS 頁面物件
 │   └── common/  # 共同功能
 ├── tests/             # 測試步驟實現
 │   └── steps/         # BDD 步驟定義
 ├── utils/             # 輔助工具和配置
+├── images/            # GoGoX app 截圖和資源
+│   └── assets/        # App 功能截圖
 └── screenshots/       # 測試證據存儲
 ```
 
 # 📋 目錄
 
-- [📱 Flutter Appium E2E 自動化測試](#-flutter-appium-e2e-自動化測試)
+- [📱 GoGoX App Flutter Appium E2E 自動化測試](#-gogox-app-flutter-appium-e2e-自動化測試)
   - [📖 專案概述](#-專案概述)
+    - [🚚 關於 GoGoX App](#-關於-gogox-app)
     - [🌟 主要特色](#-主要特色)
     - [🏗️ 架構](#️-架構)
 - [📋 目錄](#-目錄)
