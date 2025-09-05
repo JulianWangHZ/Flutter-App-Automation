@@ -169,23 +169,23 @@ AUTO_ACCEPT_ALERTS="True"
 # Test runner (local, browserstack)
 TEST_RUNNER="local"
 
-# App environment (sit, staging, production)
+# App environment (dev, staging, production)
 APPIUM_ENV="staging"
 
 
 # ===== Environment-Specific App Paths =====
 # Android APK paths (different environments)
-ANDROID_APP_PATH_SIT="/path/to/your/sit.apk"
+ANDROID_APP_PATH_DEV="/path/to/your/dev.apk"
 ANDROID_APP_PATH_STAGING="/path/to/your/staging.apk"
 ANDROID_APP_PATH_PRODUCTION="/path/to/your/production.apk"
 
 # iOS app paths (different environments, .app for simulator, .ipa for device)
-IOS_APP_PATH_SIT="/path/to/your/sit.ipa"
+IOS_APP_PATH_DEV="/path/to/your/dev.ipa"
 IOS_APP_PATH_STAGING="/path/to/your/staging.ipa"
 IOS_APP_PATH_PRODUCTION="/path/to/your/production.ipa"
 
 # ===== Application IDs =====
-APP_ID_SIT="com.yourapp.appname.sit"
+APP_ID_DEV="com.yourapp.appname.dev"
 APP_ID_STAGING="com.yourapp.appname.staging"
 APP_ID_PRODUCTION="com.appname.production"
 
@@ -202,7 +202,7 @@ BROWSERSTACK_ACCESS_KEY="your-access-key"
 BROWSERSTACK_HUB_URL="https://hub-cloud.browserstack.com/wd/hub"
 
 # Environment-specific BrowserStack app IDs
-BROWSERSTACK_APP_ID_SIT="bs://your-sit-app-id"
+BROWSERSTACK_APP_ID_DEV="bs://your-dev-app-id"
 BROWSERSTACK_APP_ID_STAGING="bs://your-staging-app-id"
 BROWSERSTACK_APP_ID_PRODUCTION="bs://your-production-app-id"
 
@@ -217,7 +217,7 @@ BROWSERSTACK_SESSION_NAME="Local Test Session"
 - **NO_RESET**: Preserve app state between tests
 - **AUTO_ACCEPT_ALERTS**: Automatically handle system permission dialogs
 - **IMPLICIT_WAIT**: Element wait timeout (default: 25 seconds)
-- **APPIUM_ENV**: App environment (staging,sit, production)
+- **APPIUM_ENV**: App environment (staging,dev, production)
 - **API_ENVIRONMENT**: Backend environment for API testing
 - **TEST_RUNNER**: Test runner type (local, browserstack)
 
@@ -235,7 +235,7 @@ The framework provides comprehensive CLI options for flexible test execution:
 --runner {local,browserstack}      # Choose test runner (default: local)
 
 # Environment Selection
---env {staging,sit,production}  # Set app environment (default: staging)
+--env {staging,dev,production}  # Set app environment (default: staging)
 
 # Setup Control
 --skipsetup                       # Skip app reinstallation and initialization
@@ -262,7 +262,7 @@ pytest --platform ios           # iOS testing
 
 # Environment testing
 pytest --env staging            # Staging environment
-pytest --env sit               # sit environment
+pytest --env dev                # dev environment
 pytest --env production        # Production environment
 
 # Cloud testing

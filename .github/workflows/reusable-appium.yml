@@ -18,10 +18,10 @@ on:
         type: string
         default: "android"
       environment:
-        description: "Test environment (staging/sit/production)"
+        description: "Test environment (staging/dev/production)"
         required: false
         type: string
-        default: "sit"
+        default: "staging"
     secrets:
       RUNNER_TOKEN:
         required: true
@@ -31,13 +31,13 @@ on:
         required: true
       BROWSERSTACK_ANDROID_APP_ID_STAGING:
         required: true
-      BROWSERSTACK_ANDROID_APP_ID_SIT:
+      BROWSERSTACK_ANDROID_APP_ID_DEV:
         required: true
       BROWSERSTACK_ANDROID_APP_ID_PRODUCTION:
         required: true
       BROWSERSTACK_IOS_APP_ID_STAGING:
         required: true
-      BROWSERSTACK_IOS_APP_ID_SIT:
+      BROWSERSTACK_IOS_APP_ID_DEV:
         required: true
       BROWSERSTACK_IOS_APP_ID_PRODUCTION:
         required: true
@@ -99,8 +99,8 @@ jobs:
           
           # Application environment settings
           APPIUM_OS: ${{ inputs.platform || 'android' }}
-          APPIUM_ENV: ${{ inputs.environment || 'sit' }}
-          API_ENVIRONMENT: ${{ inputs.environment == 'sit' && 'sit' || inputs.environment || 'sit' }}
+          APPIUM_ENV: ${{ inputs.environment || 'staging' }}
+          API_ENVIRONMENT: ${{ inputs.environment == 'staging' && 'staging' || inputs.environment || 'staging' }}
           
           # Basic test configuration
           IMPLICIT_WAIT: 25
@@ -115,7 +115,7 @@ jobs:
           
           # BrowserStack project settings
           BROWSERSTACK_PROJECT_NAME: "GoGoX App - E2E Tests"
-          BROWSERSTACK_BUILD_NAME: "${{ env.TAIPEI_DATE }}-GA-${{ inputs.platform }}-${{ inputs.environment || 'sit' }}"
+          BROWSERSTACK_BUILD_NAME: "${{ env.TAIPEI_DATE }}-GA-${{ inputs.platform }}-${{ inputs.environment || 'staging' }}"
           BROWSERSTACK_SESSION_NAME: "Call-${{ env.TAIPEI_TIME }}-${{ inputs.test_file != '' && inputs.test_file || inputs.tags != '' && inputs.tags || 'All-Tests' }}"
           
           # BrowserStack device settings
@@ -124,15 +124,15 @@ jobs:
           
           # BrowserStack application ID (dynamic based on environment and platform)
           BROWSERSTACK_ANDROID_APP_ID_STAGING: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_STAGING }}
-          BROWSERSTACK_ANDROID_APP_ID_SIT: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_SIT }}
+          BROWSERSTACK_ANDROID_APP_ID_DEV: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_DEV }}
           BROWSERSTACK_ANDROID_APP_ID_PRODUCTION: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_PRODUCTION }}
           BROWSERSTACK_IOS_APP_ID_STAGING: ${{ secrets.BROWSERSTACK_IOS_APP_ID_STAGING }}
-          BROWSERSTACK_IOS_APP_ID_SIT: ${{ secrets.BROWSERSTACK_IOS_APP_ID_SIT }}
+          BROWSERSTACK_IOS_APP_ID_DEV: ${{ secrets.BROWSERSTACK_IOS_APP_ID_DEV }}
           BROWSERSTACK_IOS_APP_ID_PRODUCTION: ${{ secrets.BROWSERSTACK_IOS_APP_ID_PRODUCTION }}
           
           # Application ID settings
           APP_ID_STAGING: "com.gogox.app.staging"
-          APP_ID_SIT: "com.gogox.app.sit"
+          APP_ID_DEV: "com.gogox.app.dev"
           APP_ID_PRODUCTION: "com.gogox.app"
           
         run: |
@@ -148,10 +148,10 @@ jobs:
           # Run tests
           if [ -n "${{ inputs.tags }}" ]; then
             echo "Running tests with tag: ${{ inputs.tags }}"
-            python -m pytest -v -k "${{ inputs.tags }}" --platform ${{ inputs.platform || 'android' }} --runner browserstack --env ${{ inputs.environment || 'sit' }} --alluredir=allure-results
+            python -m pytest -v -k "${{ inputs.tags }}" --platform ${{ inputs.platform || 'android' }} --runner browserstack --env ${{ inputs.environment || 'staging' }} --alluredir=allure-results
           else
             echo "Running tests with platform: ${{ inputs.platform || 'android' }}"
-            python -m pytest -v --platform ${{ inputs.platform || 'android' }} --runner browserstack --env ${{ inputs.environment || 'sit' }} --alluredir=allure-results
+            python -m pytest -v --platform ${{ inputs.platform || 'android' }} --runner browserstack --env ${{ inputs.environment || 'staging' }} --alluredir=allure-results
           fi
 
       - name: Install Allure CLI

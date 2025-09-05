@@ -16,14 +16,14 @@ on:
           - android
           - ios
       environment:
-        description: "Test environment (sit/staging/production)"
+        description: "Test environment (dev/staging/production)"
         required: true
         type: choice
         options:
           - staging
-          - sit
+          - dev
           - production
-        default: "sit"
+        default: "staging"
   repository_dispatch:
     types: [run-e2e-tests]
 
@@ -65,8 +65,8 @@ jobs:
           
           # Application environment settings
           APPIUM_OS: ${{ github.event.inputs.platform || 'android' }}
-          APPIUM_ENV: ${{ github.event.inputs.environment || 'sit' }}
-          API_ENVIRONMENT: ${{ github.event.inputs.environment == 'sit' && 'sit' || github.event.inputs.environment || 'sit' }}
+          APPIUM_ENV: ${{ github.event.inputs.environment || 'staging' }}
+          API_ENVIRONMENT: ${{ github.event.inputs.environment == 'staging' && 'staging' || github.event.inputs.environment || 'staging' }}
           
           # Basic test configuration
           IMPLICIT_WAIT: 25
@@ -81,7 +81,7 @@ jobs:
           
           # BrowserStack project settings
           BROWSERSTACK_PROJECT_NAME: "GoGoX App - E2E Tests"
-          BROWSERSTACK_BUILD_NAME: "${{ env.TAIPEI_DATE }}-GA-${{ github.event.inputs.platform || 'android' }}-${{ github.event.inputs.environment || 'sit' }}"
+          BROWSERSTACK_BUILD_NAME: "${{ env.TAIPEI_DATE }}-GA-${{ github.event.inputs.platform || 'android' }}-${{ github.event.inputs.environment || 'staging' }}"
           BROWSERSTACK_SESSION_NAME: "Manual-${{ env.TAIPEI_TIME }}-${{ github.event.inputs.test_file != '' && github.event.inputs.test_file || github.event.inputs.tags != '' && github.event.inputs.tags || 'All-Tests' }}"
           
           # BrowserStack device settings
@@ -90,15 +90,15 @@ jobs:
           
           # BrowserStack application ID (dynamic based on environment and platform)
           BROWSERSTACK_ANDROID_APP_ID_STAGING: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_STAGING }}
-          BROWSERSTACK_ANDROID_APP_ID_SIT: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_SIT }}
+          BROWSERSTACK_ANDROID_APP_ID_DEV: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_DEV }}
           BROWSERSTACK_ANDROID_APP_ID_PRODUCTION: ${{ secrets.BROWSERSTACK_ANDROID_APP_ID_PRODUCTION }}
           BROWSERSTACK_IOS_APP_ID_STAGING: ${{ secrets.BROWSERSTACK_IOS_APP_ID_STAGING }}
-          BROWSERSTACK_IOS_APP_ID_SIT: ${{ secrets.BROWSERSTACK_IOS_APP_ID_SIT }}
+          BROWSERSTACK_IOS_APP_ID_DEV: ${{ secrets.BROWSERSTACK_IOS_APP_ID_DEV }}
           BROWSERSTACK_IOS_APP_ID_PRODUCTION: ${{ secrets.BROWSERSTACK_IOS_APP_ID_PRODUCTION }}
           
           # Application ID settings
           APP_ID_STAGING: "com.gogox.app.staging"
-          APP_ID_SIT: "com.gogox.app.sit"
+          APP_ID_DEV: "com.gogox.app.dev"
           APP_ID_PRODUCTION: "com.gogox.app"
           
         run: |
@@ -114,10 +114,10 @@ jobs:
           # Run tests
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tags }}" ]; then
             echo "Running manual trigger with tag: ${{ github.event.inputs.tags }}"
-            python -m pytest -v -k "${{ github.event.inputs.tags }}" --platform ${{ github.event.inputs.platform || 'android' }} --runner browserstack --env ${{ github.event.inputs.environment || 'sit' }} --alluredir=allure-results
+            python -m pytest -v -k "${{ github.event.inputs.tags }}" --platform ${{ github.event.inputs.platform || 'android' }} --runner browserstack --env ${{ github.event.inputs.environment || 'staging' }} --alluredir=allure-results
           else
             echo "Running tests with platform: ${{ github.event.inputs.platform || 'android' }}"
-            python -m pytest -v --platform ${{ github.event.inputs.platform || 'android' }} --runner browserstack --env ${{ github.event.inputs.environment || 'sit' }} --alluredir=allure-results
+            python -m pytest -v --platform ${{ github.event.inputs.platform || 'android' }} --runner browserstack --env ${{ github.event.inputs.environment || 'staging' }} --alluredir=allure-results
           fi
 
       - name: Install Allure CLI

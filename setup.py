@@ -43,8 +43,8 @@ def _get_browserstack_app_id():
 
     
     # Normalize environment name
-    if env in ['sit', 'SIT', 'sit_release']:
-        env_suffix = 'SIT'
+    if env in ['dev', 'DEV', 'dev_release']:
+        env_suffix = 'DEV'
     elif env == 'staging':
         env_suffix = 'STAGING'
     elif env == 'production':

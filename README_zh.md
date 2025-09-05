@@ -169,22 +169,22 @@ AUTO_ACCEPT_ALERTS="True"
 # 測試執行器 (local, browserstack)
 TEST_RUNNER="local"
 
-# 應用程式環境 (sit, staging, production)
+# 應用程式環境 (dev, staging, production)
 APPIUM_ENV="staging"
 
 # ===== 環境特定應用程式路徑 =====
 # Android APK 路徑 (不同環境)
-ANDROID_APP_PATH_SIT="/path/to/your/sit.apk"
+ANDROID_APP_PATH_DEV="/path/to/your/dev.apk"
 ANDROID_APP_PATH_STAGING="/path/to/your/staging.apk"
 ANDROID_APP_PATH_PRODUCTION="/path/to/your/production.apk"
 
 # iOS 應用程式路徑 (不同環境, .app 用於模擬器, .ipa 用於設備)
-IOS_APP_PATH_SIT="/path/to/your/sit.ipa"
+IOS_APP_PATH_DEV="/path/to/your/dev.ipa"
 IOS_APP_PATH_STAGING="/path/to/your/staging.ipa"
 IOS_APP_PATH_PRODUCTION="/path/to/your/production.ipa"
 
 # ===== 應用程式 ID =====
-APP_ID_SIT="com.yourapp.appname.sit"
+APP_ID_DEV="com.yourapp.appname.dev"
 APP_ID_STAGING="com.yourapp.appname.staging"
 APP_ID_PRODUCTION="com.appname.production"
 
@@ -199,7 +199,7 @@ BROWSERSTACK_ACCESS_KEY="your-access-key"
 BROWSERSTACK_HUB_URL="https://hub-cloud.browserstack.com/wd/hub"
 
 # 環境特定 BrowserStack 應用程式 ID
-BROWSERSTACK_APP_ID_SIT="bs://your-sit-app-id"
+BROWSERSTACK_APP_ID_DEV="bs://your-dev-app-id"
 BROWSERSTACK_APP_ID_STAGING="bs://your-staging-app-id"
 BROWSERSTACK_APP_ID_PRODUCTION="bs://your-production-app-id"
 
@@ -214,7 +214,7 @@ BROWSERSTACK_SESSION_NAME="Local Test Session"
 - **NO_RESET**: 在測試之間保持應用程式狀態
 - **AUTO_ACCEPT_ALERTS**: 自動處理系統權限對話框
 - **IMPLICIT_WAIT**: 元素等待超時（預設：25 秒）
-- **APPIUM_ENV**: 應用程式環境 (staging, sit, production)
+- **APPIUM_ENV**: 應用程式環境 (staging, dev, production)
 - **API_ENVIRONMENT**: API 測試的後端環境
 - **TEST_RUNNER**: 測試執行器類型 (local, browserstack)
 
@@ -232,7 +232,7 @@ BROWSERSTACK_SESSION_NAME="Local Test Session"
 --runner {local,browserstack}      # 選擇測試執行器（預設：local）
 
 # 環境選擇
---env {staging,sit,production}  # 設定應用程式環境（預設：staging）
+--env {staging,dev,production}  # 設定應用程式環境（預設：staging）
 
 # 設定控制
 --skipsetup                       # 跳過應用程式重新安裝和初始化
@@ -259,7 +259,7 @@ pytest --platform ios           # iOS 測試
 
 # 環境測試
 pytest --env staging            # Staging 環境
-pytest --env sit               # sit 環境
+pytest --env dev               # dev 環境
 pytest --env production        # Production 環境
 
 # 雲端測試
