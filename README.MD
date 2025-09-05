@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📱 GoGoX App Flutter Appium E2E Testing
+# 📱 GoGoX App Appium E2E Testing
 
 [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-blue)]()
 [![Appium](https://img.shields.io/badge/Appium-2.0-purple)]()
@@ -47,7 +47,7 @@ GoGoX is a comprehensive logistics platform that connects users with delivery se
 
 ### 🏗️ Architecture
 ```
-flutter-appium-automation/
+app-appium-automation/
 ├── features/           # BDD Gherkin scenarios for GoGoX app
 │   ├── android/           # Android app features 
 │   └── ios/         # iOS features 
@@ -65,7 +65,7 @@ flutter-appium-automation/
 
 # 📋 Table of Contents
 
-- [📱 GoGoX App Flutter Appium E2E Testing](#-gogox-app-flutter-appium-e2e-testing)
+- [📱 GoGoX App Appium E2E Testing](#-gogox-app-appium-e2e-testing)
   - [📖 Project Overview](#-project-overview)
     - [🚚 About GoGoX App](#-about-gogox-app)
     - [🌟 Key Features](#-key-features)
@@ -207,7 +207,7 @@ BROWSERSTACK_APP_ID_STAGING="bs://your-staging-app-id"
 BROWSERSTACK_APP_ID_PRODUCTION="bs://your-production-app-id"
 
 # BrowserStack project settings
-BROWSERSTACK_PROJECT_NAME="Flutter App Local Development"
+BROWSERSTACK_PROJECT_NAME="App Local Development"
 BROWSERSTACK_BUILD_NAME="Local Build"
 BROWSERSTACK_SESSION_NAME="Local Test Session"
 ```

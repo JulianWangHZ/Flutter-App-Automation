@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 📱 GoGoX App Flutter Appium E2E 自動化測試
+# 📱 GoGoX App Appium E2E 自動化測試
 
 [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-blue)]()
 [![Appium](https://img.shields.io/badge/Appium-2.0-purple)]()
@@ -47,7 +47,7 @@ GoGoX 是一個綜合性物流平台，連接用戶與配送服務，為各種�
 
 ### 🏗️ 架構
 ```
-flutter-appium-automation/
+app-appium-automation/
 ├── features/           # GoGoX app 的 BDD Gherkin 場景
 │   ├── android/           # Android 應用程式功能
 │   └── ios/         # iOS 功能
@@ -65,7 +65,7 @@ flutter-appium-automation/
 
 # 📋 目錄
 
-- [📱 GoGoX App Flutter Appium E2E 自動化測試](#-gogox-app-flutter-appium-e2e-自動化測試)
+- [📱 GoGoX App Appium E2E 自動化測試](#-gogox-app-appium-e2e-自動化測試)
   - [📖 專案概述](#-專案概述)
     - [🚚 關於 GoGoX App](#-關於-gogox-app)
     - [🌟 主要特色](#-主要特色)
@@ -204,7 +204,7 @@ BROWSERSTACK_APP_ID_STAGING="bs://your-staging-app-id"
 BROWSERSTACK_APP_ID_PRODUCTION="bs://your-production-app-id"
 
 # BrowserStack 專案設定
-BROWSERSTACK_PROJECT_NAME="Flutter App Local Development"
+BROWSERSTACK_PROJECT_NAME="App Local Development"
 BROWSERSTACK_BUILD_NAME="Local Build"
 BROWSERSTACK_SESSION_NAME="Local Test Session"
 ```
